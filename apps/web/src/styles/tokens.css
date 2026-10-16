@@ -1,0 +1,62 @@
+/* Design tokens. Light by default; dark via prefers-color-scheme or data-theme on <html>. Change colors here only. */
+
+:root {
+  --bg: #f5f6ff;
+  --panel: #ffffff;
+  --tx: #1e1b4b;
+  --mut: #5b5f86;
+  --line: #e4e6f5;
+  --accent: #4f46e5;
+  --accent-fg: #ffffff;
+  --chip: #e0e7ff;
+  --ok: #166534;
+  --ok-bg: #dcfce7;
+  --warn: #92400e;
+  --warn-bg: #fef3c7;
+  --bad: #a62b2b;
+  --bad-bg: #fbe4e4;
+  --info: #3730a3;
+  --info-bg: #e0e7ff;
+  --font-display: 'DM Sans', system-ui, sans-serif;
+  --font-body: 'DM Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --bg: #0f0e24;
+    --panel: #18173a;
+    --tx: #edebff;
+    --mut: #a5a8d0;
+    --line: #2d2c5c;
+    --accent: #818cf8;
+    --accent-fg: #14123a;
+    --chip: #2a2a6b;
+    --ok: #86efac;
+    --ok-bg: #12301f;
+    --warn: #fcd34d;
+    --warn-bg: #3b2a0c;
+    --bad: #f28b8b;
+    --bad-bg: #3a1616;
+    --info: #c7ccff;
+    --info-bg: #2a2a6b;
+  }
+}
+
+:root[data-theme='dark'] {
+  --bg: #0f0e24;
+  --panel: #18173a;
+  --tx: #edebff;
+  --mut: #a5a8d0;
+  --line: #2d2c5c;
+  --accent: #818cf8;
+  --accent-fg: #14123a;
+  --chip: #2a2a6b;
+  --ok: #86efac;
+  --ok-bg: #12301f;
+  --warn: #fcd34d;
+  --warn-bg: #3b2a0c;
+  --bad: #f28b8b;
+  --bad-bg: #3a1616;
+  --info: #c7ccff;
+  --info-bg: #2a2a6b;
+}

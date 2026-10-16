@@ -1,0 +1,69 @@
+@import 'tailwindcss';
+@import './tokens.css';
+
+@import '@fontsource/dm-sans/400.css';
+@import '@fontsource/dm-sans/500.css';
+@import '@fontsource/dm-sans/600.css';
+@import '@fontsource/dm-sans/700.css';
+
+/* Maps the token layer onto Tailwind v4 utilities (bg-bg, text-tx, border-line, ...). */
+@theme inline {
+  --color-bg: var(--bg);
+  --color-panel: var(--panel);
+  --color-tx: var(--tx);
+  --color-mut: var(--mut);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-fg: var(--accent-fg);
+  --color-chip: var(--chip);
+  --color-ok: var(--ok);
+  --color-ok-bg: var(--ok-bg);
+  --color-warn: var(--warn);
+  --color-warn-bg: var(--warn-bg);
+  --color-bad: var(--bad);
+  --color-bad-bg: var(--bad-bg);
+  --color-info: var(--info);
+  --color-info-bg: var(--info-bg);
+}
+
+body {
+  background: var(--bg);
+  color: var(--tx);
+  font-family: var(--font-body);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5 {
+  font-family: var(--font-display);
+  letter-spacing: -0.01em;
+}
+
+@layer components {
+  .input {
+    @apply w-full rounded-lg border border-line bg-panel px-3 py-2 text-sm text-tx outline-none;
+    @apply focus:border-accent;
+  }
+  .btn-primary {
+    @apply inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-accent px-4 text-sm font-semibold text-accent-fg;
+    @apply hover:opacity-90 disabled:opacity-50;
+  }
+  .btn-ghost {
+    @apply inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-line bg-panel px-4 text-sm font-semibold text-tx;
+    @apply hover:bg-chip disabled:opacity-50;
+  }
+  .pill-ok {
+    @apply inline-block rounded-full bg-ok-bg px-2.5 py-0.5 text-xs font-semibold text-ok;
+  }
+  .pill-warn {
+    @apply inline-block rounded-full bg-warn-bg px-2.5 py-0.5 text-xs font-semibold text-warn;
+  }
+  .pill-info {
+    @apply inline-block rounded-full bg-info-bg px-2.5 py-0.5 text-xs font-semibold text-info;
+  }
+  .card {
+    @apply rounded-2xl border border-line bg-panel p-5;
+  }
+}

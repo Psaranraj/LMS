@@ -1,0 +1,3 @@
+export const FAILED_LOGIN_LOCK_THRESHOLD = 5;
+export const FAILED_LOGIN_LOCK_MINUTES = 15;
+export const PASSWORD_MIN_LENGTH = 8;

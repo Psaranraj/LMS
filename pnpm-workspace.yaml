@@ -1,0 +1,15 @@
+packages:
+  - 'apps/*'
+  - 'libs/shared/*'
+allowBuilds:
+  '@parcel/watcher': true
+  '@swc/core': true
+  nx: true
+  unrs-resolver: true
+  esbuild: true
+  core-js-pure: true
+  msgpackr-extract: true
+  workerd: true
+  '@prisma/client': true
+  '@prisma/engines': true
+  prisma: true

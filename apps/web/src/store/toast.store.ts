@@ -1,0 +1,19 @@
+import { create } from 'zustand';
+
+interface ToastState {
+  message: string | null;
+  show: (message: string) => void;
+}
+
+let timer: ReturnType<typeof setTimeout> | undefined;
+
+/** A small message at the bottom of the screen: toast.getState().show('Saved'). */
+export const useToastStore = create<ToastState>((set) => ({
+  message: null,
+  show: (message) => {
+    set({ message });
+    clearTimeout(timer);
+    timer = setTimeout(() => set({ message: null }), 2500);
+  },
+}));
+export const toast = (message: string) => useToastStore.getState().show(message);

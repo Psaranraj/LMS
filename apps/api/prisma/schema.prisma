@@ -1,0 +1,241 @@
+// LMS Prisma schema, Phase 0 slice: identity and RBAC.
+// Later phases (courses, weeks, lessons, quizzes, enrollments, payments,
+// certificates) append models to this same file.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Role {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  isSystem    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users           User[]
+  rolePermissions RolePermission[]
+}
+
+model Permission {
+  id          Int    @id @default(autoincrement())
+  key         String @unique
+  resource    String
+  description String
+
+  rolePermissions RolePermission[]
+}
+
+model RolePermission {
+  id           Int      @id @default(autoincrement())
+  roleId       Int
+  permissionId Int
+  grantedAt    DateTime @default(now())
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
+  @@index([permissionId])
+}
+
+model User {
+  id                  Int       @id @default(autoincrement())
+  name                String
+  email               String    @unique
+  phone               String?
+  avatarUrl           String?   @db.LongText
+  passwordHash        String
+  roleId              Int
+  active              Boolean   @default(true)
+  failedLoginAttempts Int       @default(0)
+  lockedUntil         DateTime?
+  lastLoginAt         DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  role          Role           @relation(fields: [roleId], references: [id])
+  refreshTokens RefreshToken[]
+  taughtCourses Course[]       @relation("InstructorCourses")
+  enrollments   Enrollment[]
+  quizAttempts  QuizAttempt[]
+}
+
+model RefreshToken {
+  id        Int       @id @default(autoincrement())
+  userId    Int
+  tokenHash String    @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+  userAgent String?
+  ipAddress String?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, revokedAt])
+}
+
+// ---------------------------------------------------------------------
+// Phase 3 to 7: courses, learning, payments, certificates, audit
+// ---------------------------------------------------------------------
+
+enum CourseStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum LessonType {
+  VIDEO
+  PDF
+  SLIDES
+}
+
+enum CertificateStatus {
+  REQUESTED
+  ISSUED
+  REJECTED
+  REVOKED
+}
+
+model Course {
+  id           Int          @id @default(autoincrement())
+  title        String
+  description  String       @db.Text
+  fee          Int
+  status       CourseStatus @default(DRAFT)
+  instructorId Int?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  instructor  User?        @relation("InstructorCourses", fields: [instructorId], references: [id])
+  weeks       Week[]
+  enrollments Enrollment[]
+
+  @@index([instructorId])
+}
+
+model Week {
+  id       Int    @id @default(autoincrement())
+  courseId Int
+  number   Int
+  title    String
+
+  course   Course        @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lessons  Lesson[]
+  quiz     Quiz?
+  attempts QuizAttempt[]
+
+  @@unique([courseId, number])
+}
+
+model Lesson {
+  id       Int        @id @default(autoincrement())
+  weekId   Int
+  title    String
+  type     LessonType
+  url      String     @db.Text
+  position Int
+
+  week Week @relation(fields: [weekId], references: [id], onDelete: Cascade)
+
+  @@index([weekId])
+}
+
+model Quiz {
+  id     Int @id @default(autoincrement())
+  weekId Int @unique
+
+  week      Week       @relation(fields: [weekId], references: [id], onDelete: Cascade)
+  questions Question[]
+}
+
+model Question {
+  id           Int    @id @default(autoincrement())
+  quizId       Int
+  position     Int
+  text         String
+  options      Json
+  correctIndex Int
+
+  quiz Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  @@index([quizId])
+}
+
+model Enrollment {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  courseId    Int
+  planMonths  Int
+  totalFee    Int
+  createdAt   DateTime @default(now())
+
+  user         User          @relation(fields: [userId], references: [id])
+  course       Course        @relation(fields: [courseId], references: [id])
+  installments Installment[]
+  certificate  Certificate?
+
+  @@unique([userId, courseId])
+}
+
+model Installment {
+  id           Int       @id @default(autoincrement())
+  enrollmentId Int
+  number       Int
+  amount       Int
+  dueDate      DateTime
+  paidAt       DateTime?
+  method       String?
+
+  enrollment Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+
+  @@unique([enrollmentId, number])
+}
+
+model QuizAttempt {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  weekId    Int
+  score     Int
+  passed    Boolean
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+  week Week @relation(fields: [weekId], references: [id], onDelete: Cascade)
+
+  @@index([userId, weekId])
+}
+
+model Certificate {
+  id           Int               @id @default(autoincrement())
+  enrollmentId Int               @unique
+  status       CertificateStatus @default(REQUESTED)
+  code         String            @unique
+  reason       String?
+  requestedAt  DateTime          @default(now())
+  decidedAt    DateTime?
+
+  enrollment Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+}
+
+/** One row only (id = 1): the look of every certificate. */
+model CertificateTemplate {
+  id        Int    @id
+  institute String
+  signatory String
+}
+
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  actorName String
+  action    String
+  createdAt DateTime @default(now())
+}
